@@ -5,7 +5,7 @@ import { addPreys } from "@/classes/prey/utils";
 import Food from "@/classes/food/food";
 import {addFoods} from "@/classes/food/utils";
 
-const useHandleUpdate = (numOfPreys: number, maxNumOfPreys: number, width: number, height: number, numOfFoods : number, maxNumOfFoods: number) => {
+const useHandleUpdate = (numOfPreys: number, maxNumOfPreys: number, width: number, height: number, numOfFoods : number, maxNumOfFoods: number, isGraduallyDecreasingFood : boolean) => {
 
 
     const [foods, setFoods] = useState<Food[]>([]);
@@ -88,6 +88,9 @@ const useHandleUpdate = (numOfPreys: number, maxNumOfPreys: number, width: numbe
         setFoods((prevFoods) => {
             const newFoods = prevFoods
                 .map((food) => {
+                    if (isGraduallyDecreasingFood) {
+                        maxNumOfFoods = Math.max(100,maxNumOfFoods-0.2);
+                    }
                     if (food.isAlive()) {
                         return food;
                     }

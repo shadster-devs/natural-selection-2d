@@ -10,13 +10,13 @@ import SideMenu from "@/components/SideMenu";
 const Home: React.FC = () => {
     const [width, setWidth] = useState<number>(0);
     const [height, setHeight] = useState<number>(0);
-    const [speedMultiplier, setSpeedMultiplier] = useState<number>(5);
+    const [speedMultiplier, setSpeedMultiplier] = useState<number>(100);
 
     const [timePassed, setTimePassed] = useState<number>(0);
 
     const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
-    const { preys, updatePreys, initializePreys , foods,updateFoods, initializeFoods} = useHandleUpdate(10, 50, width, height, 100,100);
+    const { preys, updatePreys, initializePreys , foods,updateFoods, initializeFoods} = useHandleUpdate(10, 50, width, height, 200,200, true);
     const { scale, position } = useHandleScale();
 
     useEffect(() => {
@@ -37,6 +37,7 @@ const Home: React.FC = () => {
     const restartPreys = () => {
         initializePreys();
         initializeFoods();
+        setTimePassed(0);
     };
 
     return (

@@ -12,8 +12,8 @@ export const addPreys = (numOfPreys: number, width: number, height: number): Pre
             Math.random() * width,
             Math.random() * height,
             getPreyRandomMutation(50),
-            getPreyRandomMutation(200),
-            getPreyRandomMutation(20),
+            getPreyRandomMutation(100),
+            getPreyRandomMutation(50),
             'blue'
         )
     );

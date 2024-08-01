@@ -1,8 +1,8 @@
-// src/components/prey/prey.ts
+// src/classes/prey/prey.ts
 import { getPreyRandomMutation } from "@/classes/prey/utils";
 import Food from "@/classes/food/food";
 
-export const preyMutationRate = 20;
+export const preyMutationRate =20;
 
 export default class Prey {
     x: number;
@@ -14,10 +14,10 @@ export default class Prey {
     visionStat: number;
 
     movementAngle: number;
-
-
-    timeWithoutFood: number;
-    maxTimeWithoutFood = 60;
+    energy: number;
+    energyCostPerMove: number;
+    energyCostPerReproduction: number;
+    energyGainFromFood: number;
 
     reproductionProbability = 0.05;
     deathProbability = 0.02;
@@ -32,7 +32,11 @@ export default class Prey {
         this.speedStat = speedStat;
         this.visionStat = visionStat;
 
-        this.timeWithoutFood = 0;
+        this.energy = sizeStat * 5;
+        this.energyCostPerMove = sizeStat * 0.3;
+        this.energyCostPerReproduction = sizeStat * 2;
+        this.energyGainFromFood = 50;
+
         this.movementAngle = 0;
     }
 
@@ -41,14 +45,8 @@ export default class Prey {
             return;
         }
 
-        let angle: number = 0;
-        if (movementAngle) {
-            angle = movementAngle;
-        } else {
-            angle = Math.random() * 2 * Math.PI;
-        }
+        let angle: number = movementAngle !== undefined ? movementAngle : Math.random() * 2 * Math.PI;
 
-        this.timeWithoutFood += 1;
 
         this.movementAngle = angle;
         let dx = Math.cos(angle) * this.speedStat;
@@ -56,16 +54,15 @@ export default class Prey {
         this.x += dx;
         this.y += dy;
 
-        if (this.x < 0 || this.x > width) dx = -dx;
-        if (this.y < 0 || this.y > height) dy = -dy;
+        if (this.x < 0 || this.x > width) this.x = Math.max(0, Math.min(width, this.x));
+        if (this.y < 0 || this.y > height) this.y = Math.max(0, Math.min(height, this.y));
 
-
+        this.energy -= this.energyCostPerMove; // Reduce energy on move
         this.hasMoved = true;
-
     }
 
-    eat(){
-        this.timeWithoutFood = 0;
+    eat() {
+        this.energy += this.energyGainFromFood; // Increase energy on eating food
     }
 
     isCollidingWithPrey(prey: Prey) {
@@ -82,39 +79,24 @@ export default class Prey {
     }
 
     getDistanceToFood(food: Food) {
-        return    Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
+        return Math.sqrt((this.x - food.x) ** 2 + (this.y - food.y) ** 2);
     }
 
     isCollidingWithFood(food: Food) {
         if (!food) {
             return false;
         }
-        // Find the closest point on the square to the center of the circle
         const closestX = Math.max(food.x, Math.min(this.x, food.x + food.size));
         const closestY = Math.max(food.y, Math.min(this.y, food.y + food.size));
-
-        // Calculate the distance from the circle's center to this closest point
         const distance = Math.sqrt((this.x - closestX) ** 2 + (this.y - closestY) ** 2);
-
-
-
         return distance < this.sizeStat;
     }
 
-
-
     isAlive() {
         const isDeathByProbability = Math.random() < this.deathProbability;
-        const isDeathByNoFood = this.timeWithoutFood > this.maxTimeWithoutFood;
+        const isDeathByEnergyDepletion = this.energy <= 0;
 
-        //id dead log the reason
-        if(isDeathByProbability){
-            console.log('Death by Probability');
-        }
-
-
-
-        return !isDeathByProbability  && !isDeathByNoFood;
+        return !isDeathByProbability  && !isDeathByEnergyDepletion;
     }
 
     moveTowardsFood(food: Food) {
@@ -132,7 +114,8 @@ export default class Prey {
 
     reproduceAlone(width: number, height: number) {
         const allowReproduction = Math.random() < this.reproductionProbability;
-        if (allowReproduction) {
+        if (allowReproduction && this.energy >= this.energyCostPerReproduction) {
+            this.energy -= this.energyCostPerReproduction; // Reduce energy for reproduction
             return new Prey(
                 Math.random() * width,
                 Math.random() * height,
@@ -151,7 +134,8 @@ export default class Prey {
         this.moveAwayFromPrey(width, height, preyMovementAngle);
         prey.moveAwayFromPrey(width, height, thisMovementAngle);
 
-        if (allowReproduction) {
+        if (allowReproduction && this.energy >= this.energyCostPerReproduction) {
+            this.energy -= this.energyCostPerReproduction; // Reduce energy for reproduction
             return new Prey(
                 Math.random() * width,
                 Math.random() * height,
