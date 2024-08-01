@@ -60,8 +60,9 @@ const useHandleUpdate = (numOfPreys: number, maxNumOfPreys: number, width: numbe
                             minDistance = distance;
                             closestFood = foods[j];
                         }
-                        newPreys[i].moveTowardsFood(closestFood);
-
+                        if (closestFood) {
+                            newPreys[i].moveTowardsFood(closestFood);
+                        }
                     }
                 }
             }

@@ -5,8 +5,6 @@ import Food from "@/classes/food/food";
 export const preyMutationRate = 20;
 
 export default class Prey {
-    type: 'prey';
-
     x: number;
     y: number;
     color: string;
