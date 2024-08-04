@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from '../KonvaWrapper';
-import Food from "@/classes/food/food";
+import Food from "@/oldcode/classes/food/food";
 
 interface FoodComponentProps {
     foods: Food[];

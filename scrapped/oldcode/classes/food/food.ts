@@ -1,4 +1,6 @@
 // src/classes/food/food.ts
+import Prey from "@/oldcode/classes/prey/prey";
+
 export default class Food {
     x: number;
     y: number;

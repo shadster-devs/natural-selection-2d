@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const useHandleScale = () => {
-    const [scale, setScale] = useState<number>(1);
+    const [scale, setScale] = useState<number>(0.5);
     const [position, setPosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
 
     useEffect(() => {

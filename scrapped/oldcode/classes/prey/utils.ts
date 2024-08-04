@@ -1,5 +1,5 @@
 // src/components/prey/utils.ts
-import Prey, { preyMutationRate } from '@/classes/prey/prey';
+import Prey, { preyMutationRate } from '@/oldcode/classes/prey/prey';
 
 export const getPreyRandomMutation = (base: number): number => {
     const mutatedValue = base + (Math.random() < 0.5 ? -1 : 1) * Math.random() * preyMutationRate;
@@ -11,9 +11,9 @@ export const addPreys = (numOfPreys: number, width: number, height: number): Pre
         new Prey(
             Math.random() * width,
             Math.random() * height,
-            getPreyRandomMutation(50),
-            getPreyRandomMutation(100),
-            getPreyRandomMutation(50),
+            getPreyRandomMutation(30),
+            getPreyRandomMutation(200),
+            getPreyRandomMutation(30),
             'blue'
         )
     );

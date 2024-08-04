@@ -1,130 +1,59 @@
-// src/components/prey/useHandleUpdate.ts
-import { useEffect, useState, useCallback } from 'react';
-import Prey from "@/classes/prey/prey";
-import { addPreys } from "@/classes/prey/utils";
-import Food from "@/classes/food/food";
-import {addFoods} from "@/classes/food/utils";
+import { useEffect, useState } from 'react';
+import Simulation from '../simulation/Simulation';
 
-const useHandleUpdate = (numOfPreys: number, maxNumOfPreys: number, width: number, height: number, numOfFoods : number, maxNumOfFoods: number, isGraduallyDecreasingFood : boolean) => {
-
-
-    const [foods, setFoods] = useState<Food[]>([]);
-
-    const [preys, setPreys] = useState<Prey[]>([]);
-
-    const initializePreys = useCallback(() => {
-        const initialPreys = addPreys(numOfPreys, width, height);
-        setPreys(initialPreys);
-    }, [numOfPreys, width, height]);
-
-    const initializeFoods = useCallback(() => {
-        const initialFoods = addFoods(numOfFoods, width, height);
-        setFoods(initialFoods);
-    }, [numOfFoods, width, height]);
+const useHandleUpdate = (simulation: Simulation, speedMultiplier : number) => {
+    const [isRunning, setIsRunning] = useState(false);
+    const [preys, setPreys] = useState(simulation.preys);
+    const [foods, setFoods] = useState(simulation.foods);
+    const [predators, setPredators] = useState(simulation.predators);
+    const [status, setStatus] = useState("paused"); // Simulation status
 
     useEffect(() => {
-        initializePreys();
-    }, [initializePreys]);
+        let interval: NodeJS.Timeout;
+        if (isRunning) {
+            setStatus('running');
+            interval = setInterval(() => {
+                simulation.update();
+                setPreys([...simulation.preys]);
+                setFoods([...simulation.foods]);
+                setPredators([...simulation.predators]);
+            }, 1000/speedMultiplier);
+        } else {
+            setStatus('paused');
+        }
+        return () => clearInterval(interval);
+    }, [isRunning, simulation,speedMultiplier]);
 
+    const start = () => {
+        if (status !== 'running') {
+            setIsRunning(true);
+            setStatus('running');
+        }
+    };
+
+    const stop = () => {
+        setIsRunning(false);
+        setStatus('paused');
+    };
+
+    const reset = () => {
+        setIsRunning(false);
+        setStatus('paused');
+        simulation.initialize();
+        setPreys([...simulation.preys]);
+        setFoods([...simulation.foods]);
+        setPredators([...simulation.predators]);
+    };
+
+    // Stop simulation if no more preys or predators
     useEffect(() => {
-        initializeFoods();
-    }, [initializeFoods]);
+        if (preys.length === 0 && predators.length === 0) {
+            setIsRunning(false);
+            setStatus('stopped');
+        }
+    }, [preys, predators]);
 
-    const updatePreys = useCallback(() => {
-        setPreys((prevPreys) => {
-
-            const newPreys = prevPreys.filter((prey) => prey.isAlive())
-                .map((prey) => {
-                    prey.hasMoved = false;
-                    return prey;
-                });
-
-            for (let i = 0; i < newPreys.length; i++) {
-                // for (let j = i + 1; j < newPreys.length; j++) {
-                //     if (newPreys[i].isCollidingWithPrey(newPreys[j])) {
-                //         const newPrey = newPreys[i].reproduceWith(newPreys[j], width, height);
-                //         if (newPrey) {
-                //             newPreys.push(newPrey);
-                //             if (newPreys.length > maxNumOfPreys) {
-                //                 newPreys.splice(Math.floor(Math.random() * 2) ? i : j, 1);
-                //             }
-                //         }
-                //     }
-                // }
-                for (let j = 0; j < foods.length; j++) {
-                    let minDistance = 1000000;
-                    let closestFood = null;
-                    if (newPreys[i].isFoodVisible(foods[j])) {
-                        const distance = newPreys[i].getDistanceToFood(foods[j]);
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestFood = foods[j];
-                        }
-                        if (closestFood) {
-                            newPreys[i].moveTowardsFood(closestFood);
-                        }
-                    }
-                }
-            }
-
-            for (let i = 0; i < newPreys.length; i++) {
-                if (!newPreys[i].hasMoved) {
-                    newPreys[i].move(width, height);
-                }
-                const newPrey = newPreys[i].reproduceAlone(width, height);
-                if (newPrey) {
-                    newPreys.push(newPrey);
-                    if (newPreys.length > maxNumOfPreys) {
-                        newPreys.splice(i, 1);
-                    }
-                }
-            }
-
-            return newPreys;
-        });
-    }, [width, height]);
-
-    const updateFoods = useCallback(() => {
-        setFoods((prevFoods) => {
-            const newFoods = prevFoods
-                .map((food) => {
-                    if (isGraduallyDecreasingFood) {
-                        maxNumOfFoods = Math.max(100,maxNumOfFoods-0.2);
-                    }
-                    if (food.isAlive()) {
-                        return food;
-                    }
-                    return null;
-                })
-                .filter((food) => food !== null) as Food[];
-
-            for (let i = 0; i < newFoods.length; i++) {
-                for (let j = 0; j < preys.length; j++) {
-                    if (preys[j].isCollidingWithFood(newFoods[i])) {
-                        preys[j].eat();
-                        newFoods.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-
-            for (let i = 0; i < newFoods.length; i++) {
-
-                    if (newFoods.length < maxNumOfFoods) {
-                        const newFood = newFoods[i].grow(width,height);
-                        if (newFood) {
-                            newFoods.push(newFood);
-                        }
-                    }
-
-            }
-
-            return newFoods;
-        })
-        }, [width, height, preys, foods]);
-
-
-    return { preys, updatePreys, initializePreys , foods, updateFoods, initializeFoods};
+    return { start, stop, reset, preys, foods, predators, status };
 };
 
 export default useHandleUpdate;

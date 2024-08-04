@@ -1,5 +1,5 @@
 // src/components/prey/FoodComponent.tsx
-import Prey from '@/classes/prey/prey';
+import Prey from '@/oldcode/classes/prey/prey';
 import React from "react";
 import { Circle as KonvaCircle } from '../KonvaWrapper';
 

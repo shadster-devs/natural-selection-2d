@@ -1,4 +1,4 @@
-import Food from "@/classes/food/food";
+import Food from "@/oldcode/classes/food/food";
 
 
 export const addFoods = (numOfFoods: number, width: number, height: number): Food[] => {
@@ -6,7 +6,7 @@ export const addFoods = (numOfFoods: number, width: number, height: number): Foo
         new Food(
             Math.random() * width,
             Math.random() * height,
-            40,
+            30,
             'green'
         )
     );

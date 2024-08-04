@@ -1,49 +1,83 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import styles from './SideMenu.module.scss';
-import Prey from "@/classes/prey/prey";
-import Food from "@/classes/food/food";
-import {Circle} from "@/components/KonvaWrapper";
+import Prey from "@/entities/Prey";
+import Predator from "@/entities/Predator";
+import Simulation from "@/simulation/Simulation";
+import Food from "@/entities/Food";
+
+interface Config {
+    [key: string]: number | string;
+}
 
 interface SideMenuProps {
     isCollapsed: boolean;
-    preys: Prey[];
-    foods: Food[];
+    initialConfig: Config;
 }
 
+const formatKey = (key: string) => {
+    return  key.split('_').join(' ').toWellFormed();
+};
 
+const SideMenu: React.FC<SideMenuProps> = ({ isCollapsed, initialConfig, onUpdate }) => {
+    const [config, setConfig] = useState<Config>(initialConfig);
 
-const SideMenu: React.FC<SideMenuProps> = (props) => {
-    const { isCollapsed, foods,preys } = props;
+    const handleUpdate = (config: { [key: string]: number | string }) => {
+        for (const key in config) {
+            const [className, variableName] = key.split('.');
+            switch (className) {
+                case 'Prey':
+                    (Prey as any)[variableName] = config[key];
+                    break;
+                case 'Predator':
+                    (Predator as any)[variableName] = config[key];
+                    break;
+                case 'Simulation':
+                    (Simulation as any)[variableName] = config[key];
+                    break;
+                case 'Food':
+                    (Food as any)[variableName] = config[key];
+                    break;
+            }
+        }
+    };
 
-    const avgPreySize = preys.reduce((acc, prey) => acc + prey.sizeStat, 0) / preys.length;
-    const avgPreySpeed = preys.reduce((acc, prey) => acc + prey.speedStat, 0) / preys.length;
-    const avgPreyVision = preys.reduce((acc, prey) => acc + prey.visionStat, 0) / preys.length;
+    useEffect(() => {
+        handleUpdate(config);
+    }, [config]);
 
+    const handleChange = (field: string, value: number | string) => {
+        setConfig(prevConfig => ({
+            ...prevConfig,
+            [field]: value
+        }));
+    };
 
-    const preyCount = preys.length;
-    const foodCount = foods.length;
-
-
+    const groupedConfig = Object.entries(config).reduce((acc: { [key: string]: Config }, [key, value]) => {
+        const [className, variableName] = key.split('.');
+        if (!acc[className]) acc[className] = {};
+        acc[className][variableName] = value;
+        return acc;
+    }, {});
 
     return (
         <div className={`${styles['control-side-menu']} ${isCollapsed ? styles.collapsed : ''}`}>
             <div className={styles.content}>
-                <h1>Stats</h1>
-                <div>
-                    <h2>Preys</h2>
-                    <p>Count: {preyCount}</p>
-                    <p>Avg Size: {avgPreySize.toFixed(2)}</p>
-                    <p>Avg Speed: {avgPreySpeed.toFixed(2)}</p>
-                    <p>Avg Vision: {avgPreyVision.toFixed(2)}</p>
-                    <Circle radius={avgPreySize}  fill={'red'} />
-                    <Circle radius={avgPreyVision} stroke='black' strokeWidth={2}/>
-                </div>
-                <div>
-                    <h2>Foods</h2>
-                    <p>Count: {foodCount}</p>
-                </div>
+                {Object.keys(groupedConfig).map(className => (
+                    <div key={className} className={styles.classSection}>
+                        <h3>{className}</h3>
+                        {Object.entries(groupedConfig[className]).map(([variableName, value]) => (
+                            <label key={variableName} className={styles.label}>
+                                {formatKey(variableName)}
+                                <input
+                                    type={typeof value === 'number' ? 'number' : 'text'}
+                                    value={value}
+                                    onChange={(e) => handleChange(`${className}.${variableName}`, typeof value === 'number' ? Number(e.target.value) : e.target.value)}
+                                />
+                            </label>
+                        ))}
+                    </div>
+                ))}
             </div>
-
         </div>
     );
 };

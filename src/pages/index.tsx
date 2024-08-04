@@ -1,79 +1,97 @@
-// src/pages/index.tsx
-import React, { useEffect, useState } from 'react';
-import { Stage, Layer } from '@/components/KonvaWrapper';
-import useHandleUpdate from "@/hooks/useHandleUpdate";
-import useHandleScale from "@/hooks/useHandleScale";
-import PreyComponent from "@/components/prey/PreyComponent";
-import FoodComponent from "@/components/food/FoodComponent";
-import SideMenu from "@/components/SideMenu";
+import React, { useEffect, useRef, useState } from 'react';
+import Simulation from '../simulation/Simulation';
+import CanvasRenderer from '../components/CanvasRenderer';
+import Controls from '../components/Controls';
+import StatsDisplay from '../components/StatsDisplay';
+import useHandleUpdate from '../hooks/useHandleUpdate';
+import useCanvasZoom from '../hooks/useCanvasZoom';
+import SideMenu from '../components/SideMenu';
+import styles from '../styles/Home.module.scss';
+import { FaCog } from 'react-icons/fa';
+import Prey from "@/entities/Prey";
+import Predator from "@/entities/Predator";
+import Food from "@/entities/Food";
+import useWindowSize from "@/hooks/useWindowSize";
 
 const Home: React.FC = () => {
-    const [width, setWidth] = useState<number>(0);
-    const [height, setHeight] = useState<number>(0);
-    const [speedMultiplier, setSpeedMultiplier] = useState<number>(100);
+    const simulationRef = useRef<Simulation | null>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [isMenuCollapsed, setIsMenuCollapsed] = useState(true);
+    const [speedMultiplier, setSpeedMultiplier] = useState(1);
+    const {width, height} = useWindowSize();
 
-    const [timePassed, setTimePassed] = useState<number>(0);
+    const initialConfig = {
+        //simulation
+        'Simulation.MAX_PREYS': Simulation.MAX_PREYS,
+        'Simulation.MAX_FOODS': Simulation.MAX_FOODS,
+        'Simulation.MAX_PREDATORS': Simulation.MAX_PREDATORS,
+        'Simulation.INITIAL_PREYS': Simulation.INITIAL_PREYS,
+        'Simulation.INITIAL_FOODS': Simulation.INITIAL_FOODS,
+        'Simulation.INITIAL_PREDATORS': Simulation.INITIAL_PREDATORS,
+        'Simulation.MINIMUM_FOOD_COUNT': Simulation.MINIMUM_FOOD_COUNT,
+        'Simulation.MAX_FITTEST_PREYS_FROM_LAST_GENERATION': Simulation.MAX_FITTEST_PREYS_FROM_LAST_GENERATION,
+        'Simulation.MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION': Simulation.MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION,
 
-    const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+        //prey
+        'Prey.MUTATION_RATE': Prey.MUTATION_RATE,
+        'Prey.DEFAULT_VISION_STAT': Prey.DEFAULT_VISION_STAT,
+        'Prey.DEFAULT_SIZE_STAT': Prey.DEFAULT_SIZE_STAT,
+        'Prey.DEFAULT_SPEED_STAT': Prey.DEFAULT_SPEED_STAT,
+        'Prey.DEFAULT_SELF_REPRODUCTION_PROBABILITY': Prey.DEFAULT_SELF_REPRODUCTION_PROBABILITY,
+        'Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY': Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY,
+        'Prey.MIN_MUTATED_VALUE': Prey.MIN_MUTATED_VALUE,
+        'Prey.MAX_MUTATED_VALUE': Prey.MAX_MUTATED_VALUE,
 
-    const { preys, updatePreys, initializePreys , foods,updateFoods, initializeFoods} = useHandleUpdate(10, 50, width, height, 200,200, true);
-    const { scale, position } = useHandleScale();
+        //predator
+        'Predator.MUTATION_RATE': Predator.MUTATION_RATE,
+        'Predator.DEFAULT_VISION_STAT': Predator.DEFAULT_VISION_STAT,
+        'Predator.DEFAULT_SIZE_STAT': Predator.DEFAULT_SIZE_STAT,
+        'Predator.DEFAULT_SPEED_STAT': Predator.DEFAULT_SPEED_STAT,
+        'Predator.DEFAULT_SELF_REPRODUCTION_PROBABILITY': Predator.DEFAULT_SELF_REPRODUCTION_PROBABILITY,
+        'Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY': Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY,
+        'Predator.MIN_MUTATED_VALUE': Predator.MIN_MUTATED_VALUE,
+        'Predator.MAX_MUTATED_VALUE': Predator.MAX_MUTATED_VALUE,
+
+        //food
+        'Food.DEFAULT_SIZE': Food.DEFAULT_SIZE,
+        'Food.REPRODUCTION_PROBABILITY': Food.REPRODUCTION_PROBABILITY,
+        'Food.DECAY_RATE': Food.DECAY_RATE,
+    };
+
+    if (!simulationRef.current) {
+        simulationRef.current = new Simulation(width, height);
+    }
+
+    const { start, stop, reset, preys, foods, predators, status } = useHandleUpdate(simulationRef.current!, speedMultiplier);
+    const { zoomLevel, canvasPosition, handleReset } = useCanvasZoom(simulationRef.current!.width, simulationRef.current!.height);
 
     useEffect(() => {
-        setHeight(window.innerHeight);
-        setWidth(window.innerWidth);
-    }, []);
+        if (!isInitialized && simulationRef.current) {
+            simulationRef.current!.initialize();
+            setIsInitialized(true);
+        }
+    }, [isInitialized]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            updateFoods();
-            updatePreys();
-            setTimePassed((prevTime) => prevTime + 1);
-        }, 1000 / speedMultiplier);
-
-        return () => clearInterval(interval);
-    }, [speedMultiplier, updatePreys,updateFoods]);
-
-    const restartPreys = () => {
-        initializePreys();
-        initializeFoods();
-        setTimePassed(0);
+    const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSpeedMultiplier( Math.min(Math.max(Number(event.target.value), 1), 999));
     };
 
     return (
-        <div>
-            <Stage
-                width={width}
-                height={height}
-                scaleX={scale}
-                scaleY={scale}
-                x={position.x}
-                y={position.y}
-            >
-                <Layer>
-                    <FoodComponent foods={foods} />
-                    <PreyComponent preys={preys} />
-                </Layer>
-            </Stage>
-            <div style={{ position: 'fixed', top: 10, left: 10 }}>
-                <label>
-                    Animation Speed Multiplier:
-                    <input
-                        type="number"
-                        value={speedMultiplier}
-                        onChange={(e) => setSpeedMultiplier(Number(e.target.value))}
-                        min="1"
-                        step="1"
-                        max="100"
-                    />
-                </label>
-                <p>Time Passed: {timePassed}</p>
-                <p>Number of Preys: {preys.length}</p>
-                <p>Number of Foods: {foods.length}</p>
-                <button onClick={restartPreys}>Restart</button>
-                <button onClick={() => setIsCollapsed((prev) => !prev)}>Open Side Panel</button>
-                <SideMenu isCollapsed={isCollapsed} preys={preys} foods={foods} />
-            </div>
+        <div className={styles.container}>
+            <Controls onStart={start} onStop={stop} onReset={reset} status={status}  speedMultiplier={speedMultiplier} handleSpeedChange={handleSpeedChange} zoomReset={handleReset} toggleSideMenu={()=>setIsMenuCollapsed(!isMenuCollapsed)} />
+            <SideMenu isCollapsed={isMenuCollapsed} initialConfig={initialConfig} />
+            {simulationRef.current && (
+                <CanvasRenderer
+                    preys={preys}
+                    foods={foods}
+                    predators={predators}
+                    width={simulationRef.current!.width}
+                    height={simulationRef.current!.height}
+                    zoomLevel={zoomLevel}
+                    canvasPosition={canvasPosition}
+                />
+            )}
+            {simulationRef.current && <StatsDisplay simulation={simulationRef.current!} />}
         </div>
     );
 };

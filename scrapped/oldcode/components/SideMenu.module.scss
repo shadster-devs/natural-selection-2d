@@ -3,8 +3,8 @@
   top: 0;
   right: 0;
   height: 100%;
-  width: 40%; /* Initial width */
-  background-color: lightgrey;
+  width: 10%; /* Initial width */
+  background-color: darkgrey;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease, width 0.3s ease;
   transform: translateX(0); /* Default position */
@@ -45,35 +45,8 @@
 
 
   .content {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    grid-gap: 0.5rem;
-
-    .classSection {
-      margin-bottom: 20px;
-
-      h3 {
-        margin-bottom: 10px;
-        font-size: 18px;
-        font-weight: bold;
-      }
-
-      .label {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-
-        input {
-          width: 50%;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          padding: 5px;
-        }
-      }
-    }
-
+    padding: 10px;
+    flex: 1;
   }
 
   .table {

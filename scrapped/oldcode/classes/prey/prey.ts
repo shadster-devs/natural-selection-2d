@@ -1,8 +1,8 @@
 // src/classes/prey/prey.ts
-import { getPreyRandomMutation } from "@/classes/prey/utils";
-import Food from "@/classes/food/food";
+import { getPreyRandomMutation } from "@/oldcode/classes/prey/utils";
+import Food from "@/oldcode/classes/food/food";
 
-export const preyMutationRate =20;
+export const preyMutationRate =10;
 
 export default class Prey {
     x: number;
@@ -19,7 +19,11 @@ export default class Prey {
     energyCostPerReproduction: number;
     energyGainFromFood: number;
 
-    reproductionProbability = 0.05;
+    numOfFoodToUnlockReproduction: number = 7;
+    numOfFoodEaten: number;
+    isReproductionUnlocked: boolean = false;
+
+    reproductionProbability = 0.06;
     deathProbability = 0.02;
 
     hasMoved = false;
@@ -33,10 +37,15 @@ export default class Prey {
         this.visionStat = visionStat;
 
         this.energy = sizeStat * 5;
-        this.energyCostPerMove = sizeStat * 0.3;
-        this.energyCostPerReproduction = sizeStat * 2;
-        this.energyGainFromFood = 50;
+        this.energyCostPerMove = sizeStat * 0.2;
+        this.energyCostPerReproduction = sizeStat * 1.5;
+        this.energyGainFromFood = sizeStat * 0.5;
 
+        this.numOfFoodEaten = 0;
+        this.numOfFoodToUnlockReproduction = 0;
+
+
+        this.isReproductionUnlocked =false;
         this.movementAngle = 0;
     }
 
@@ -49,10 +58,10 @@ export default class Prey {
 
 
         this.movementAngle = angle;
-        let dx = Math.cos(angle) * this.speedStat;
-        let dy = Math.sin(angle) * this.speedStat;
-        this.x += dx;
-        this.y += dy;
+            let dx = Math.cos(angle) * this.speedStat;
+            let dy = Math.sin(angle) * this.speedStat;
+            this.x += dx;
+            this.y += dy;
 
         if (this.x < 0 || this.x > width) this.x = Math.max(0, Math.min(width, this.x));
         if (this.y < 0 || this.y > height) this.y = Math.max(0, Math.min(height, this.y));
@@ -62,6 +71,8 @@ export default class Prey {
     }
 
     eat() {
+        this.numOfFoodEaten++;
+        this.isReproductionUnlocked = this.numOfFoodEaten >= this.numOfFoodToUnlockReproduction;
         this.energy += this.energyGainFromFood; // Increase energy on eating food
     }
 

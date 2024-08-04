@@ -1,0 +1,33 @@
+.controls-container {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(140, 140, 140, 0.3);
+  border: 1px solid rgba(140, 140, 140, 0.5);  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+
+  button {
+    background-color: whitesmoke;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding:5px 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    justify-content: center;
+    align-content: center;
+  }
+
+  input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 2rem;
+  }
+}
+
