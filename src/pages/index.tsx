@@ -7,11 +7,11 @@ import useHandleUpdate from '../hooks/useHandleUpdate';
 import useCanvasZoom from '../hooks/useCanvasZoom';
 import SideMenu from '../components/SideMenu';
 import styles from '../styles/Home.module.scss';
-import { FaCog } from 'react-icons/fa';
 import Prey from "@/entities/Prey";
 import Predator from "@/entities/Predator";
 import Food from "@/entities/Food";
 import useWindowSize from "@/hooks/useWindowSize";
+import {getFromLocalStorage, LocalStorageKeys} from "@/utils/localStorageUtil";
 
 const Home: React.FC = () => {
     const simulationRef = useRef<Simulation | null>(null);
@@ -20,7 +20,12 @@ const Home: React.FC = () => {
     const [speedMultiplier, setSpeedMultiplier] = useState(1);
     const {width, height} = useWindowSize();
 
-    const initialConfig = {
+    const [config, setConfig] = useState();
+
+    useEffect(() => {
+
+
+    const initialConfig = getFromLocalStorage(LocalStorageKeys.CONFIG) || {
         //simulation
         'Simulation.MAX_PREYS': Simulation.MAX_PREYS,
         'Simulation.MAX_FOODS': Simulation.MAX_FOODS,
@@ -41,6 +46,7 @@ const Home: React.FC = () => {
         'Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY': Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY,
         'Prey.MIN_MUTATED_VALUE': Prey.MIN_MUTATED_VALUE,
         'Prey.MAX_MUTATED_VALUE': Prey.MAX_MUTATED_VALUE,
+        'Prey.REPRODUCTION_TYPE': Prey.REPRODUCTION_TYPE,
 
         //predator
         'Predator.MUTATION_RATE': Predator.MUTATION_RATE,
@@ -51,12 +57,17 @@ const Home: React.FC = () => {
         'Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY': Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY,
         'Predator.MIN_MUTATED_VALUE': Predator.MIN_MUTATED_VALUE,
         'Predator.MAX_MUTATED_VALUE': Predator.MAX_MUTATED_VALUE,
+        'Predator.REPRODUCTION_TYPE': Predator.REPRODUCTION_TYPE,
 
         //food
         'Food.DEFAULT_SIZE': Food.DEFAULT_SIZE,
         'Food.REPRODUCTION_PROBABILITY': Food.REPRODUCTION_PROBABILITY,
         'Food.DECAY_RATE': Food.DECAY_RATE,
     };
+
+    setConfig(initialConfig);
+    }, []);
+
 
     if (!simulationRef.current) {
         simulationRef.current = new Simulation(width, height);
@@ -79,7 +90,7 @@ const Home: React.FC = () => {
     return (
         <div className={styles.container}>
             <Controls onStart={start} onStop={stop} onReset={reset} status={status}  speedMultiplier={speedMultiplier} handleSpeedChange={handleSpeedChange} zoomReset={handleReset} toggleSideMenu={()=>setIsMenuCollapsed(!isMenuCollapsed)} />
-            <SideMenu isCollapsed={isMenuCollapsed} initialConfig={initialConfig} />
+            {config &&<SideMenu isCollapsed={isMenuCollapsed} initialConfig={config} />}
             {simulationRef.current && (
                 <CanvasRenderer
                     preys={preys}

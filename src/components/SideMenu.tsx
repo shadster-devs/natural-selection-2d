@@ -4,6 +4,7 @@ import Prey from "@/entities/Prey";
 import Predator from "@/entities/Predator";
 import Simulation from "@/simulation/Simulation";
 import Food from "@/entities/Food";
+import {LocalStorageKeys, saveToLocalStorage} from "@/utils/localStorageUtil";
 
 interface Config {
     [key: string]: number | string;
@@ -43,6 +44,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isCollapsed, initialConfig }) => {
 
     useEffect(() => {
         handleUpdate(config);
+        saveToLocalStorage(LocalStorageKeys.CONFIG, config)
     }, [config]);
 
     const handleChange = (field: string, value: number | string) => {

@@ -10,21 +10,21 @@ class Simulation {
     width: number;
     height: number;
 
-    static  MAX_PREYS = 30;
-    static  MAX_FOODS = 300;
-    static  MAX_PREDATORS = 15;
+    static  MAX_PREYS = 100;
+    static  MAX_FOODS = 1000;
+    static  MAX_PREDATORS = 50;
 
-    static  INITIAL_PREYS = 20;
-    static  INITIAL_FOODS = 200; 
-    static  INITIAL_PREDATORS = 10;
+    static  INITIAL_PREYS = 50;
+    static  INITIAL_FOODS = 500;
+    static  INITIAL_PREDATORS = 25;
 
-    static  MINIMUM_FOOD_COUNT = 10;
+    static  MINIMUM_FOOD_COUNT = 250;
 
     fittestPreys: Prey[];
     fittestPredators: Predator[];
 
-    static  MAX_FITTEST_PREYS_FROM_LAST_GENERATION = 10;
-    static  MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION = 5;
+    static  MAX_FITTEST_PREYS_FROM_LAST_GENERATION = 20;
+    static  MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION = 10;
 
     constructor(width: number, height: number) {
         this.width = width;
