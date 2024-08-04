@@ -8,8 +8,8 @@ const Home: React.FC = () => {
     const [height, setHeight] = useState(0);
 
     useEffect(() => {
-        setWidth(window.outerWidth);
-        setHeight(window.outerHeight);
+        setWidth(window.innerWidth);
+        setHeight(window.innerHeight);
     }, []);
 
     return (

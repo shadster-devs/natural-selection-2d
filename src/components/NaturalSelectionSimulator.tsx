@@ -7,10 +7,8 @@ import useHandleUpdate from '../hooks/useHandleUpdate';
 import useCanvasZoom from '../hooks/useCanvasZoom';
 import SideMenu from '../components/SideMenu';
 import styles from '../styles/Home.module.scss';
-import Prey from "@/entities/Prey";
-import Predator from "@/entities/Predator";
-import Food from "@/entities/Food";
 import {getFromLocalStorage, LocalStorageKeys} from "@/utils/localStorageUtil";
+import {getConfig} from "@/utils/utils";
 
 interface NaturalSelectionSimulatorProps {
     width: number;
@@ -25,54 +23,19 @@ const NaturalSelectionSimulator: React.FC<NaturalSelectionSimulatorProps> = (pro
 
     const [isInitialized, setIsInitialized] = useState(false);
     const [isMenuCollapsed, setIsMenuCollapsed] = useState(true);
-    const [speedMultiplier, setSpeedMultiplier] = useState(1);
+    const [speedMultiplier, setSpeedMultiplier] = useState(99);
 
-    const [config, setConfig] = useState();
+    const initialConfig = getConfig(null);
+
+    const [config, setConfig] = useState(initialConfig);
+
 
     useEffect(() => {
+        const localConfig = getFromLocalStorage(LocalStorageKeys.CONFIG);
+        if (localConfig) {
+            setConfig(getConfig(localConfig));
+        }
 
-
-        const initialConfig = getFromLocalStorage(LocalStorageKeys.CONFIG) || {
-            //simulation
-            'Simulation.MAX_PREYS': Simulation.MAX_PREYS,
-            'Simulation.MAX_FOODS': Simulation.MAX_FOODS,
-            'Simulation.MAX_PREDATORS': Simulation.MAX_PREDATORS,
-            'Simulation.INITIAL_PREYS': Simulation.INITIAL_PREYS,
-            'Simulation.INITIAL_FOODS': Simulation.INITIAL_FOODS,
-            'Simulation.INITIAL_PREDATORS': Simulation.INITIAL_PREDATORS,
-            'Simulation.MINIMUM_FOOD_COUNT': Simulation.MINIMUM_FOOD_COUNT,
-            'Simulation.MAX_FITTEST_PREYS_FROM_LAST_GENERATION': Simulation.MAX_FITTEST_PREYS_FROM_LAST_GENERATION,
-            'Simulation.MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION': Simulation.MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION,
-
-            //prey
-            'Prey.MUTATION_RATE': Prey.MUTATION_RATE,
-            'Prey.DEFAULT_VISION_STAT': Prey.DEFAULT_VISION_STAT,
-            'Prey.DEFAULT_SIZE_STAT': Prey.DEFAULT_SIZE_STAT,
-            'Prey.DEFAULT_SPEED_STAT': Prey.DEFAULT_SPEED_STAT,
-            'Prey.DEFAULT_SELF_REPRODUCTION_PROBABILITY': Prey.DEFAULT_SELF_REPRODUCTION_PROBABILITY,
-            'Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY': Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY,
-            'Prey.MIN_MUTATED_VALUE': Prey.MIN_MUTATED_VALUE,
-            'Prey.MAX_MUTATED_VALUE': Prey.MAX_MUTATED_VALUE,
-            'Prey.REPRODUCTION_TYPE': Prey.REPRODUCTION_TYPE,
-
-            //predator
-            'Predator.MUTATION_RATE': Predator.MUTATION_RATE,
-            'Predator.DEFAULT_VISION_STAT': Predator.DEFAULT_VISION_STAT,
-            'Predator.DEFAULT_SIZE_STAT': Predator.DEFAULT_SIZE_STAT,
-            'Predator.DEFAULT_SPEED_STAT': Predator.DEFAULT_SPEED_STAT,
-            'Predator.DEFAULT_SELF_REPRODUCTION_PROBABILITY': Predator.DEFAULT_SELF_REPRODUCTION_PROBABILITY,
-            'Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY': Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY,
-            'Predator.MIN_MUTATED_VALUE': Predator.MIN_MUTATED_VALUE,
-            'Predator.MAX_MUTATED_VALUE': Predator.MAX_MUTATED_VALUE,
-            'Predator.REPRODUCTION_TYPE': Predator.REPRODUCTION_TYPE,
-
-            //food
-            'Food.DEFAULT_SIZE': Food.DEFAULT_SIZE,
-            'Food.REPRODUCTION_PROBABILITY': Food.REPRODUCTION_PROBABILITY,
-            'Food.DECAY_RATE': Food.DECAY_RATE,
-        };
-
-        setConfig(initialConfig);
     }, []);
 
 

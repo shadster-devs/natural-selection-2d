@@ -23,7 +23,7 @@ class Predator extends Entity {
 
     static readonly REPRODUCTION_TYPE: 'self' | 'cross' = 'cross';
 
-    static readonly MUTATION_RATE = 2;
+    static readonly MUTATION_RATE = 4;
     static readonly DEFAULT_VISION_STAT = 12;
     static readonly DEFAULT_SIZE_STAT = 7;
     static readonly DEFAULT_SPEED_STAT = 12;
@@ -31,7 +31,7 @@ class Predator extends Entity {
     static readonly DEFAULT_CROSS_REPRODUCTION_PROBABILITY= 0.5;
 
     static readonly MIN_MUTATED_VALUE = 1;
-    static readonly MAX_MUTATED_VALUE = 22;
+    static readonly MAX_MUTATED_VALUE = 50;
 
     static calculateInitialEnergy(sizeStat: number) {
         return sizeStat * 6;
@@ -77,7 +77,7 @@ class Predator extends Entity {
     }
 
     static calculateEnergyGain(prey: Prey) {
-        return prey.energy;
+        return prey.energy/2;
     }
 
     static getReproductionProbability() {

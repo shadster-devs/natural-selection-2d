@@ -23,7 +23,7 @@ class Prey extends Entity {
 
     static  REPRODUCTION_TYPE: 'self' | 'cross' = 'cross';
 
-    static  MUTATION_RATE = 2;
+    static  MUTATION_RATE = 4;
     static  DEFAULT_VISION_STAT = 10;
     static  DEFAULT_SIZE_STAT = 5;
     static  DEFAULT_SPEED_STAT = 10;
@@ -31,7 +31,7 @@ class Prey extends Entity {
     static  DEFAULT_CROSS_REPRODUCTION_PROBABILITY = 0.5;
 
     static  MIN_MUTATED_VALUE = 1;
-    static  MAX_MUTATED_VALUE = 20;
+    static  MAX_MUTATED_VALUE = 50;
 
     static getReproductionProbability() {
         return Prey.REPRODUCTION_TYPE === 'self' ? Prey.DEFAULT_SELF_REPRODUCTION_PROBABILITY : Prey.DEFAULT_CROSS_REPRODUCTION_PROBABILITY;
