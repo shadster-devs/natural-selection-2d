@@ -18,7 +18,7 @@ const formatKey = (key: string) => {
     return  key.split('_').join(' ').toWellFormed();
 };
 
-const SideMenu: React.FC<SideMenuProps> = ({ isCollapsed, initialConfig, onUpdate }) => {
+const SideMenu: React.FC<SideMenuProps> = ({ isCollapsed, initialConfig }) => {
     const [config, setConfig] = useState<Config>(initialConfig);
 
     const handleUpdate = (config: { [key: string]: number | string }) => {
