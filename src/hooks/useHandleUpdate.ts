@@ -3,9 +3,9 @@ import Simulation from '../simulation/Simulation';
 
 const useHandleUpdate = (simulation: Simulation, speedMultiplier : number) => {
     const [isRunning, setIsRunning] = useState(false);
-    const [preys, setPreys] = useState(simulation.preys);
-    const [foods, setFoods] = useState(simulation.foods);
-    const [predators, setPredators] = useState(simulation.predators);
+    const [preys, setPreys] = useState(simulation?.preys);
+    const [foods, setFoods] = useState(simulation?.foods);
+    const [predators, setPredators] = useState(simulation?.predators);
     const [status, setStatus] = useState("paused"); // Simulation status
 
     useEffect(() => {
@@ -14,9 +14,9 @@ const useHandleUpdate = (simulation: Simulation, speedMultiplier : number) => {
             setStatus('running');
             interval = setInterval(() => {
                 simulation.update();
-                setPreys([...simulation.preys]);
-                setFoods([...simulation.foods]);
-                setPredators([...simulation.predators]);
+                setPreys([...simulation?.preys]);
+                setFoods([...simulation?.foods]);
+                setPredators([...simulation?.predators]);
             }, 1000/speedMultiplier);
         } else {
             setStatus('paused');
@@ -40,14 +40,14 @@ const useHandleUpdate = (simulation: Simulation, speedMultiplier : number) => {
         setIsRunning(false);
         setStatus('paused');
         simulation.initialize();
-        setPreys([...simulation.preys]);
-        setFoods([...simulation.foods]);
-        setPredators([...simulation.predators]);
+        setPreys([...simulation?.preys]);
+        setFoods([...simulation?.foods]);
+        setPredators([...simulation?.predators]);
     };
 
     // Stop simulation if no more preys or predators
     useEffect(() => {
-        if (preys.length === 0 && predators.length === 0) {
+        if (preys?.length === 0 && predators?.length === 0) {
             setIsRunning(false);
             setStatus('stopped');
         }
