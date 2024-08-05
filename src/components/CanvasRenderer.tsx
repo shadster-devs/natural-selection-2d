@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stage, Layer, Circle } from './KonvaWrapper';
+import {Circle, Layer, Line, Stage, Text} from './KonvaWrapper';
 import Prey from '../entities/Prey';
 import Food from '../entities/Food';
 import Predator from '../entities/Predator';
@@ -22,16 +22,37 @@ const CanvasRenderer: React.FC<CanvasRendererProps> = ({ preys, foods, predators
                     <Circle key={food.id} x={food.x} y={food.y} radius={food.size} fill="green" />
                 ))}
                 {preys.map((prey) => (
-                    <Circle key={prey.id} x={prey.x} y={prey.y} radius={prey.effectiveSize} fill="blue" />
-                ))}
-                {preys.map((prey) => (
-                    <Circle key={prey.id} x={prey.x} y={prey.y} radius={prey.effectiveVision} strokeWidth={1} stroke='black'/>
+                    <React.Fragment key={prey.id}>
+                        <Circle x={prey.x} y={prey.y} radius={prey.effectiveSize} fill="blue"/>
+                        <Line
+                            points={[prey.x, prey.y, prey.x + Math.cos(prey.directionAngle + Math.PI) * prey.effectiveSize, prey.y + Math.sin(prey.directionAngle + Math.PI) * prey.effectiveSize]}
+                            stroke="black"/>
+                        <Circle x={prey.x} y={prey.y} radius={prey.effectiveVision} strokeWidth={1} stroke='black'/>
+                        <Text
+                            x={prey.x - prey.effectiveSize}
+                            y={prey.y - prey.effectiveSize - 10}
+                            text={prey.actionState}
+                            fontSize={10}
+                            fill="black"
+                        />
+                    </React.Fragment>
                 ))}
                 {predators.map((predator) => (
-                    <Circle key={predator.id} x={predator.x} y={predator.y} radius={predator.effectiveSize} fill="red" />
-                ))}
-                {predators.map((predator) => (
-                    <Circle key={predator.id} x={predator.x} y={predator.y} radius={predator.effectiveVision} strokeWidth={1} stroke='black' />
+                    <React.Fragment key={predator.id}>
+                        <Circle x={predator.x} y={predator.y} radius={predator.effectiveSize} fill="red"/>
+                        <Line
+                            points={[predator.x, predator.y, predator.x + Math.cos(predator.directionAngle + Math.PI) * predator.effectiveSize, predator.y + Math.sin(predator.directionAngle + Math.PI) * predator.effectiveSize]}
+                            stroke="black"/>
+                        <Circle x={predator.x} y={predator.y} radius={predator.effectiveVision} strokeWidth={1}
+                                stroke='black'/>
+                        <Text
+                            x={predator.x - predator.effectiveSize}
+                            y={predator.y - predator.effectiveSize - 10}
+                            text={predator.actionState}
+                            fontSize={10}
+                            fill="black"
+                        />
+                    </React.Fragment>
                 ))}
             </Layer>
         </Stage>

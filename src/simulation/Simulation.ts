@@ -1,7 +1,7 @@
 import Prey from "../entities/Prey";
 import Food from "../entities/Food";
 import Predator from "../entities/Predator";
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 
 class Simulation {
     preys: Prey[];
@@ -10,21 +10,21 @@ class Simulation {
     width: number;
     height: number;
 
-    static  MAX_PREYS = 100;
-    static  MAX_FOODS = 1000;
-    static  MAX_PREDATORS = 50;
+    static MAX_PREYS = 50;
+    static MAX_FOODS = 500;
+    static MAX_PREDATORS = 25;
 
-    static  INITIAL_PREYS = 50;
-    static  INITIAL_FOODS = 500;
-    static  INITIAL_PREDATORS = 25;
+    static INITIAL_PREYS = 25;
+    static INITIAL_FOODS = 250;
+    static INITIAL_PREDATORS = 13;
 
     static  MINIMUM_FOOD_COUNT = 250;
 
     fittestPreys: Prey[];
     fittestPredators: Predator[];
 
-    static  MAX_FITTEST_PREYS_FROM_LAST_GENERATION = 20;
-    static  MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION = 10;
+    static MAX_FITTEST_PREYS_FROM_LAST_GENERATION = 10;
+    static MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION = 5;
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -123,7 +123,7 @@ class Simulation {
         this.foods = this.foods.filter(food => !food.isEaten);
 
         // Check if all entities are dead and reinitialize if necessary
-        if (this.preys.length < 1 || this.predators.length < 1) {
+        if (this.preys.length < Simulation.MAX_FITTEST_PREYS_FROM_LAST_GENERATION || this.predators.length < Simulation.MAX_FITTEST_PREDATORS_FROM_LAST_GENERATION) {
             this.reinitialize();
         }
 

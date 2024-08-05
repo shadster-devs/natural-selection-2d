@@ -1,8 +1,7 @@
 import Entity from "./Entity";
 import Prey from "./Prey";
 import QLearning from "../reinforcement/QLearning";
-import { v4 as uuidv4 } from 'uuid';
-import Food from "@/entities/Food"; // Using uuid for unique ID generation
+import {v4 as uuidv4} from 'uuid';
 
 class Predator extends Entity {
     visionStat: number;
@@ -11,6 +10,8 @@ class Predator extends Entity {
     energy: number;
     maxEnergy: number;
     age: number = 0;
+    static MUTATION_RATE = 1;
+    static DEFAULT_VISION_STAT = 12;
 
     effectiveVision: number;
     effectiveSize: number;
@@ -20,37 +21,50 @@ class Predator extends Entity {
     parents: [string, string];
 
     qLearning: QLearning;
-
-    static readonly REPRODUCTION_TYPE: 'self' | 'cross' = 'cross';
-
-    static readonly MUTATION_RATE = 4;
-    static readonly DEFAULT_VISION_STAT = 12;
-    static readonly DEFAULT_SIZE_STAT = 7;
-    static readonly DEFAULT_SPEED_STAT = 12;
-    static readonly DEFAULT_SELF_REPRODUCTION_PROBABILITY = 0.05;
-    static readonly DEFAULT_CROSS_REPRODUCTION_PROBABILITY= 0.5;
-
-    static readonly MIN_MUTATED_VALUE = 1;
-    static readonly MAX_MUTATED_VALUE = 50;
+    static DEFAULT_SIZE_STAT = 7;
+    static DEFAULT_SPEED_STAT = 12;
+    static DEFAULT_SELF_REPRODUCTION_PROBABILITY = 0.05;
+    static DEFAULT_CROSS_REPRODUCTION_PROBABILITY = 0.5;
+    static REPRODUCTION_TYPE: 'self' | 'cross' = 'cross';
+    static MIN_MUTATED_VALUE = 1;
+    static MAX_MUTATED_VALUE = 50;
+    static CHANGE_DIRECTION_PROBABILITY = 0.2;
+    directionAngle: number;
+    actionState: string;
 
     static calculateInitialEnergy(sizeStat: number) {
         return sizeStat * 6;
     }
 
-    static calculateMaxEnergy(sizeStat: number) {
-        return sizeStat * 6;
+    constructor(id: string, x: number, y: number, visionStat: number, sizeStat: number, speedStat: number, parents: [string, string] = ["", ""], isChild: boolean = false) {
+        super(id, x, y);
+        this.visionStat = Predator.mutateAttribute(visionStat);
+        this.sizeStat = Predator.mutateAttribute(sizeStat);
+        this.speedStat = Predator.mutateAttribute(speedStat);
+        this.energy = isChild ? Predator.calculateNewBornEnergy(this.sizeStat) : Predator.calculateInitialEnergy(this.sizeStat);
+        this.maxEnergy = Predator.calculateMaxEnergy(this.sizeStat);
+        this.age = 0;
+        this.directionAngle = Math.random() * Math.PI * 2;
+
+        this.entityConsumed = 0;
+        this.qLearning = new QLearning(0.1, 0.9, 0.1);
+        this.parents = parents;
+
+        this.effectiveVision = Predator.calculateEffectiveVision(this.visionStat, this.sizeStat);
+        this.effectiveSize = Predator.calculateEffectiveSize(this.sizeStat);
+        this.effectiveSpeed = Predator.calculateEffectiveSpeed(this.speedStat, this.sizeStat);
     }
 
     static calculateNewBornEnergy(sizeStat: number) {
         return sizeStat * 2;
     }
 
-    static calculateReproductionEnergyCost(sizeStat: number) {
-        return sizeStat * 3;
+    static calculateMaxEnergy(sizeStat: number) {
+        return sizeStat * 8;
     }
 
-    static calculateMovementEnergyCost(effectiveSize: number, effectiveSpeed: number, effectiveVision: number) {
-        return effectiveSize * 0.4 + effectiveSpeed * 0.5 + effectiveVision * 0.1;
+    static calculateReproductionEnergyCost(sizeStat: number) {
+        return sizeStat * 2;
     }
 
     static mutateAttribute(value: number) {
@@ -84,59 +98,46 @@ class Predator extends Entity {
         return Predator.REPRODUCTION_TYPE === 'self' ? Predator.DEFAULT_SELF_REPRODUCTION_PROBABILITY : Predator.DEFAULT_CROSS_REPRODUCTION_PROBABILITY;
     }
 
-    static calculateReward(action: string, energy: number, maxEnergy: number) {
-        let reward = 0;
-        switch (action) {
-            case 'moveTowardsPrey':
-                reward = energy < maxEnergy ? 20 : 4;
-                break;
-            case 'moveTowardsMate':
-                reward = energy >= maxEnergy ? 10 : 2;
-                break;
-            case 'randomMove':
-                reward = -1;
-                break;
-        }
-        return reward;
-    }
-
     static calculateDistance(x1: number, y1: number, x2: number, y2: number) {
         return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     }
 
-    constructor(id: string, x: number, y: number, visionStat: number, sizeStat: number, speedStat: number, parents: [string, string] = ["", ""], isChild: boolean = false) {
-        super(id, x, y);
-        this.visionStat = Predator.mutateAttribute(visionStat);
-        this.sizeStat = Predator.mutateAttribute(sizeStat);
-        this.speedStat = Predator.mutateAttribute(speedStat);
-        this.energy = isChild ? Predator.calculateNewBornEnergy(this.sizeStat) : Predator.calculateInitialEnergy(this.sizeStat);
-        this.maxEnergy = Predator.calculateMaxEnergy(this.sizeStat);
-        this.age = 0;
-
-        this.entityConsumed = 0;
-        this.qLearning = new QLearning(0.1, 0.9, 0.1);
-        this.parents = parents;
-
-        this.effectiveVision = Predator.calculateEffectiveVision(this.visionStat, this.sizeStat);
-        this.effectiveSize = Predator.calculateEffectiveSize(this.sizeStat);
-        this.effectiveSpeed = Predator.calculateEffectiveSpeed(this.speedStat, this.sizeStat);
+    static calculateMovementEnergyCost(sizeSate: number, speedStat: number, sizeStat: number) {
+        return sizeSate * 0.5 + speedStat * 0.4 + sizeStat * 0.1;
     }
 
-    detectEntities(entities: Entity[]) {
-        return entities.filter(entity => {
-            const distance = Predator.calculateDistance(this.x, this.y, entity.x, entity.y);
-            return entity instanceof Prey && distance <= this.effectiveVision;
+    detectEntities(entities: Entity[], entityType: 'prey' | 'predator') {
+        const nearByEntities = entities.filter(entity => {
+            let distance: number;
+            if (entityType === 'prey') {
+                distance = Predator.calculateDistance(this.x, this.y, entity.x, entity.y);
+                return entity instanceof Prey && distance < this.effectiveVision + entity.effectiveSize;
+            }
+            if (entityType === 'predator') {
+                distance = Predator.calculateDistance(this.x, this.y, entity.x, entity.y);
+                return entity instanceof Predator && distance < this.effectiveVision + entity.effectiveSize && entity.id !== this.id;
+            }
         });
+
+        nearByEntities.sort((a, b) => {
+            return Predator.calculateDistance(this.x, this.y, a.x, a.y) - Predator.calculateDistance(this.x, this.y, b.x, b.y);
+        });
+
+        return nearByEntities;
     }
 
-    move(targetX: number, targetY: number, width: number, height: number) {
-        const angle = Math.atan2(targetY - this.y, targetX - this.x);
+    move(angle: number, width: number, height: number) {
         this.x += Math.cos(angle) * this.effectiveSpeed;
         this.y += Math.sin(angle) * this.effectiveSpeed;
 
-        // Ensure the predator stays within the simulation bounds
-        this.x = Math.max(0, Math.min(this.x, width));
-        this.y = Math.max(0, Math.min(this.y, height));
+        this.directionAngle = angle;
+
+        // Ensure the predator stays within the simulation bounds and change directionAngle to random
+        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+            this.x = Math.max(0, Math.min(width, this.x));
+            this.y = Math.max(0, Math.min(height, this.y));
+            this.directionAngle = Math.random() * Math.PI * 2;
+        }
 
         this.energy -= Predator.calculateMovementEnergyCost(this.sizeStat, this.speedStat, this.visionStat);
     }
@@ -147,9 +148,43 @@ class Predator extends Entity {
         prey.energy = 0;
     }
 
+    evaluateState(prey: Prey | null, mate: Predator | null) {
+        return {
+            distanceToPrey: prey ? Predator.calculateDistance(this.x, this.y, prey.x, prey.y) : Infinity,
+            distanceToMate: mate ? Predator.calculateDistance(this.x, this.y, mate.x, mate.y) : Infinity,
+        };
+    }
+
+    calculateReward(action: string, state) {
+        let reward = 0;
+        const energyForReproductionAndAMove = Predator.calculateReproductionEnergyCost(this.sizeStat) + Predator.calculateMovementEnergyCost(this.sizeStat, this.speedStat, this.visionStat);
+
+        switch (action) {
+            case 'moveTowardsPrey':
+                if (this.energy < energyForReproductionAndAMove) {
+                    reward = 2 * this.effectiveVision - state.distanceToPrey;
+                } else {
+                    reward = -1;
+                }
+                break;
+            case 'moveTowardsMate':
+                if (this.energy > energyForReproductionAndAMove) {
+                    reward = 2 * this.effectiveVision + this.age - state.distanceToMate;
+                } else {
+                    reward = -1;
+                }
+                break;
+            case 'randomMove':
+                reward = -1;
+                break;
+        }
+        return reward;
+    }
+
+
     scoreActions(state: any) {
         const actions = ['moveTowardsPrey', 'moveTowardsMate', 'randomMove'];
-        const scores = actions.map(action => this.qLearning.getQValue(state, action) + Predator.calculateReward(action, this.energy, this.maxEnergy));
+        const scores = actions.map(action => this.qLearning.getQValue(state, action) + this.calculateReward(action, state));
         return scores;
     }
 
@@ -159,37 +194,49 @@ class Predator extends Entity {
     }
 
     update(entities: Entity[], width: number, height: number): Predator | null {
-        this.age += 1;
-
-        const preys = entities.filter(entity => entity instanceof Prey) as Prey[];
-        const mates = entities.filter(entity => entity instanceof Predator && entity !== this) as Predator[];
-
         if (this.energy <= 0) return null;
 
-        const state = this.evaluateState(preys, mates);
+        this.age += 1;
+        const preys = entities.filter(entity => entity instanceof Prey) as Prey[];
+
+        const mates = entities.filter(entity => entity instanceof Predator && entity !== this) as Predator[];
+
+        const nearbyPrey = this.detectEntities(preys, 'prey') as Prey[];
+        const nearbyMates = this.detectEntities(mates, 'predator') as Predator[];
+
+        const nearestPrey = nearbyPrey[0] || null;
+        const nearestMate = nearbyMates[0] || null;
+
+
+        const state = this.evaluateState(nearestPrey, nearestMate);
         const scores = this.scoreActions(state);
         const actionIndex = this.selectAction(scores);
         const action = ['moveTowardsPrey', 'moveTowardsMate', 'randomMove'][actionIndex];
 
         switch (action) {
             case 'moveTowardsPrey':
-                const prey = preys.find(p => Predator.calculateDistance(this.x, this.y, p.x, p.y) === state.distanceToPrey);
-                if (!prey) {
+                this.actionState = 'moveTowardsPrey';
+                if (!nearestPrey) {
+                    this.actionState = 'randomMove';
                     this.directedRandomMove(width, height);
                     break;
                 }
-                this.moveToEntity(prey, width, height);
+                this.moveToEntity(nearestPrey, width, height);
                 break;
             case 'moveTowardsMate':
-                const mate = mates.find(m => Predator.calculateDistance(this.x, this.y, m.x, m.y) === state.distanceToMate);
-                if (!mate) {
+                this.actionState = 'moveTowardsMate';
+                if (!nearestMate) {
+                    this.actionState = 'randomMove';
                     this.directedRandomMove(width, height);
                     break;
                 }
-                this.moveToEntity(mate, width, height);
+                this.moveToEntity(nearestMate, width, height);
                 break;
             case 'randomMove':
+                this.actionState = 'randomMove';
                 this.directedRandomMove(width, height);
+                break;
+            default:
                 break;
         }
 
@@ -219,38 +266,27 @@ class Predator extends Entity {
             offspring = this.reproduce(this, width, height);
         }
 
-        this.qLearning.updateQValue(state, action, Predator.calculateReward(action, this.energy, this.maxEnergy), this.evaluateState(preys, mates));
+        this.qLearning.updateQValue(state, action, this.calculateReward(action, state), this.evaluateState(nearestPrey, nearestMate));
 
         return offspring;
     }
 
-    evaluateState(preys: Prey[], mates: Predator[]) {
-        const nearbyPrey = this.detectEntities(preys);
-        const nearbyMates = this.detectEntities(mates);
-
-        return {
-            energy: this.energy,
-            distanceToPrey: nearbyPrey.length > 0 ? Predator.calculateDistance(this.x, this.y, nearbyPrey[0].x, nearbyPrey[0].y) : Infinity,
-            distanceToMate: nearbyMates.length > 0 ? Predator.calculateDistance(this.x, this.y, nearbyMates[0].x, nearbyMates[0].y) : Infinity,
-        };
-    }
-
     moveToEntity(entity: any, width: number, height: number) {
-        this.move(entity.x, entity.y, width, height);
+        const angle = Math.atan2(this.y - entity.y, this.x - entity.x);
+        this.move(angle, width, height);
     }
 
     moveAwayFromEntity(entity: any, width: number, height: number) {
-        const angle = Math.atan2(this.y - entity.y, this.x - entity.x);
-        const targetX = this.x + Math.cos(angle) * this.effectiveSpeed;
-        const targetY = this.y + Math.sin(angle) * this.effectiveSpeed;
-        this.move(targetX, targetY, width, height);
+        const angle = Math.atan2(entity.y - this.y, entity.x - this.x);
+        this.move(angle, width, height);
     }
 
     directedRandomMove(width: number, height: number) {
-        const movementAngle = Math.random() * Math.PI * 2;
-        const targetX = this.x + Math.cos(movementAngle) * this.effectiveSpeed;
-        const targetY = this.y + Math.sin(movementAngle) * this.effectiveSpeed;
-        this.move(targetX, targetY, width, height);
+        if (Math.random() < Predator.CHANGE_DIRECTION_PROBABILITY) {
+            this.directionAngle = Math.random() * Math.PI * 2;
+        }
+
+        this.move(this.directionAngle, width, height);
     }
 
     reproduce(mate: Predator, width: number, height: number): Predator | null {

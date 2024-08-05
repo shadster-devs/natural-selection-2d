@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Simulation from '../simulation/Simulation';
 import CanvasRenderer from '../components/CanvasRenderer';
 import Controls from '../components/Controls';
@@ -29,7 +29,6 @@ const NaturalSelectionSimulator: React.FC<NaturalSelectionSimulatorProps> = (pro
 
     const [config, setConfig] = useState(initialConfig);
 
-
     useEffect(() => {
         const localConfig = getFromLocalStorage(LocalStorageKeys.CONFIG);
         if (localConfig) {
@@ -37,7 +36,6 @@ const NaturalSelectionSimulator: React.FC<NaturalSelectionSimulatorProps> = (pro
         }
 
     }, []);
-
 
     React.useEffect(() => {
         simulationRef.current = new Simulation(width, height);

@@ -1,5 +1,5 @@
 import React from 'react';
-import {FiPause, FiPlay, FiRepeat} from "react-icons/fi";
+import {FiPause, FiPlay} from "react-icons/fi";
 import {RxReload} from "react-icons/rx";
 import styles from './Controls.module.scss';
 import {TbZoomReset} from "react-icons/tb";
@@ -25,7 +25,7 @@ const Controls: React.FC<ControlsProps> = ({ onStart, onStop, onReset, status,sp
             </button>
             <button onClick={onReset}><RxReload color={'black'} fill={'black'}/></button>
             <label>
-                x <input type="numeric" value={speedMultiplier} onChange={handleSpeedChange}/>
+                x <input type="number" value={speedMultiplier} onChange={handleSpeedChange}/>
             </label>
             <button onClick={zoomReset}><TbZoomReset color={'black'}/></button>
             <button onClick={toggleSideMenu}><FaCog color={'black'}/></button>
