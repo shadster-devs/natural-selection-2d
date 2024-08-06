@@ -17,6 +17,7 @@ const Home: React.FC = () => {
         <>
             <Head>
                 <title>Natural Selection</title>
+                <link rel="icon" href="/naturalSelection.svg"/>
             </Head>
             <NaturalSelectionSimulator width={width} height={height}/>
         </>
