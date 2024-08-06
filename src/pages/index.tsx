@@ -16,7 +16,7 @@ const Home: React.FC = () => {
     return (
         <>
             <Head>
-                <title>Procedural Creature</title>
+                <title>Natural Selection</title>
             </Head>
             <NaturalSelectionSimulator width={width} height={height}/>
         </>
