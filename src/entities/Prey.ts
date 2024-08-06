@@ -56,6 +56,8 @@ class Prey extends Entity {
         this.maxEnergy = Prey.calculateMaxEnergy(this.sizeStat);
         this.entityConsumed = 0;
         this.age = 0;
+        this.actionState = 'spawned';
+
         this.directionAngle = Math.random() * Math.PI * 2;
         this.qLearning = new QLearning(0.1, 0.9, 0.1);
         this.parents = parents;
@@ -159,7 +161,7 @@ class Prey extends Entity {
         food.isEaten = true;
     }
 
-    calculateReward(action: string, state) {
+    calculateReward(action: string, state: any) {
         let reward = 0;
         const energyForReproductionAndAMove = Prey.calculateReproductionEnergyCost(this.sizeStat) + Prey.calculateMovementEnergyCost(this.sizeStat, this.speedStat, this.visionStat);
 

@@ -45,6 +45,7 @@ class Predator extends Entity {
         this.maxEnergy = Predator.calculateMaxEnergy(this.sizeStat);
         this.age = 0;
         this.directionAngle = Math.random() * Math.PI * 2;
+        this.actionState = 'spawned';
 
         this.entityConsumed = 0;
         this.qLearning = new QLearning(0.1, 0.9, 0.1);
@@ -155,7 +156,7 @@ class Predator extends Entity {
         };
     }
 
-    calculateReward(action: string, state) {
+    calculateReward(action: string, state: any) {
         let reward = 0;
         const energyForReproductionAndAMove = Predator.calculateReproductionEnergyCost(this.sizeStat) + Predator.calculateMovementEnergyCost(this.sizeStat, this.speedStat, this.visionStat);
 
