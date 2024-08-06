@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import NaturalSelectionSimulator from "@/components/NaturalSelectionSimulator";
+import Head from "next/head";
 
 
 const Home: React.FC = () => {
@@ -13,7 +14,12 @@ const Home: React.FC = () => {
     }, []);
 
     return (
-        <NaturalSelectionSimulator width={width} height={height} />
+        <>
+            <Head>
+                <title>Procedural Creature</title>
+            </Head>
+            <NaturalSelectionSimulator width={width} height={height}/>
+        </>
     );
 
 };
