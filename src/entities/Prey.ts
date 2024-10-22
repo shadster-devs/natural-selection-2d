@@ -59,7 +59,7 @@ class Prey extends Entity {
         this.actionState = 'spawned';
 
         this.directionAngle = Math.random() * Math.PI * 2;
-        this.qLearning = new QLearning(0.1, 0.9, 0.1);
+        this.qLearning = new QLearning(0.1, 0.9, 0.1, 0.01, 0.99);
         this.parents = parents;
 
         this.effectiveVision = Prey.calculateEffectiveVision(this.visionStat, this.sizeStat);

@@ -48,7 +48,7 @@ class Predator extends Entity {
         this.actionState = 'spawned';
 
         this.entityConsumed = 0;
-        this.qLearning = new QLearning(0.1, 0.9, 0.1);
+        this.qLearning = new QLearning(0.1, 0.9, 0.1, 0.01, 0.99);
         this.parents = parents;
 
         this.effectiveVision = Predator.calculateEffectiveVision(this.visionStat, this.sizeStat);
